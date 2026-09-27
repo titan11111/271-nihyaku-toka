@@ -81,10 +81,12 @@
     while (i < s.length) {
       if (s.charAt(i) === "｜") {
         const mid = s.indexOf("《", i);
-        const end = s.indexOf("》", mid);
-        for (let k = i + 1; k < mid; k++) map.push(k);
-        i = end + 1;
-        continue;
+        const end = mid < 0 ? -1 : s.indexOf("》", mid);
+        if (mid > i + 1 && end > mid) {
+          for (let k = i + 1; k < mid; k++) map.push(k);
+          i = end + 1;
+          continue;
+        }
       }
       map.push(i);
       i += 1;
@@ -99,11 +101,14 @@
     while (i < s.length) {
       if (s.charAt(i) === "｜") {
         const mid = s.indexOf("《", i);
-        const start = base;
-        base += mid - (i + 1);
-        spans.push([start, base]);
-        i = s.indexOf("》", mid) + 1;
-        continue;
+        const end = mid < 0 ? -1 : s.indexOf("》", mid);
+        if (mid > i + 1 && end > mid) {
+          const start = base;
+          base += mid - (i + 1);
+          spans.push([start, base]);
+          i = end + 1;
+          continue;
+        }
       }
       base += 1;
       i += 1;
@@ -326,14 +331,19 @@
     while (i < s.length) {
       if (s.charAt(i) === "｜") {
         const mid = s.indexOf("《", i);
-        const end = s.indexOf("》", mid);
-        const ruby = document.createElement("ruby");
-        ruby.appendChild(document.createTextNode(s.slice(i + 1, mid)));
-        const rt = document.createElement("rt");
-        rt.textContent = s.slice(mid + 1, end);
-        ruby.appendChild(rt);
-        parent.appendChild(ruby);
-        i = end + 1;
+        const end = mid < 0 ? -1 : s.indexOf("》", mid);
+        if (mid > i + 1 && end > mid) {
+          const ruby = document.createElement("ruby");
+          ruby.appendChild(document.createTextNode(s.slice(i + 1, mid)));
+          const rt = document.createElement("rt");
+          rt.textContent = s.slice(mid + 1, end);
+          ruby.appendChild(rt);
+          parent.appendChild(ruby);
+          i = end + 1;
+          continue;
+        }
+        parent.appendChild(document.createTextNode("｜"));
+        i += 1;
         continue;
       }
       const next = s.indexOf("｜", i);
@@ -364,6 +374,11 @@
 
   function setContentReady(mode) {
     contentMode = mode === "custom" ? "custom" : "novel";
+    document.title = contentMode === "custom" ? "貼り付けた文" : "二百十日";
+    $("cover-title").textContent = contentMode === "custom" ? "貼り付けた文" : "二百十日";
+    $("cover-author").hidden = contentMode === "custom";
+    $("done-title").textContent = contentMode === "custom" ? "貼り付けた文" : "夏目漱石『二百十日』";
+    $("done-credit").hidden = contentMode === "custom";
     $("btn-start").disabled = false;
     const resume = $("btn-resume");
     resume.disabled = false;
