@@ -1,0 +1,374 @@
+:root {
+  --paper: #f3efe4;
+  --ink: #1c1914;
+  --muted: #6f675c;
+  --line: #ddd4c4;
+  --accent: #7a3e28;
+  --btn: #1c1914;
+  --btn-ink: #f7f3ea;
+  --ghost: transparent;
+  --fs: 22px;
+  --fresh: #7a3e28;
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  --paper: #141311;
+  --ink: #f3efe6;
+  --muted: #b7ab9c;
+  --line: #3a342c;
+  --accent: #e4b08a;
+  --btn: #f3efe6;
+  --btn-ink: #141311;
+  --fresh: #e4b08a;
+  color-scheme: dark;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+  touch-action: none;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", YuGothic, sans-serif;
+  font-weight: 500;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+button, .game-btn {
+  font: inherit;
+  min-height: 56px;
+  min-width: 56px;
+  border-radius: 14px;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 0.08s ease, opacity 0.08s ease;
+}
+
+button:active,
+button.is-pressed {
+  transform: scale(0.92);
+  opacity: 0.88;
+}
+
+button:disabled {
+  opacity: 0.38;
+  pointer-events: none;
+}
+
+#bar, #meter {
+  position: relative;
+  z-index: 6;
+  background: var(--paper);
+}
+
+#bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: calc(8px + env(safe-area-inset-top)) 12px 8px calc(12px + env(safe-area-inset-left));
+  padding-right: calc(12px + env(safe-area-inset-right));
+  border-bottom: 1px solid var(--line);
+}
+
+#bar h1 {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#progress-label {
+  font-size: 13px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+.icon-btn {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  min-height: 56px;
+  padding: 0;
+  border: 1px solid var(--line);
+  background: var(--ghost);
+  color: var(--ink);
+  border-radius: 12px;
+  font-size: 16px;
+  letter-spacing: 0;
+}
+
+#meter {
+  height: 3px;
+  background: var(--line);
+}
+
+#meter > span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+}
+
+#stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  justify-content: center;
+  cursor: pointer;
+}
+
+::selection {
+  background: transparent;
+  color: inherit;
+}
+
+#flow {
+  width: min(100%, 36rem);
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 28px;
+  text-align: center;
+}
+
+.frame {
+  margin: 0;
+  font-size: var(--fs);
+  font-weight: 600;
+  line-height: 2.05;
+  letter-spacing: 0.08em;
+  padding-top: 0.45em;
+}
+
+.frame ruby {
+  ruby-position: over;
+}
+
+.frame rt {
+  font-size: 0.42em;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.fresh {
+  animation: rise 0.2s ease;
+}
+
+@keyframes rise {
+  from { opacity: 0.2; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fresh { animation: none; }
+}
+
+#dock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 14px calc(12px + env(safe-area-inset-bottom));
+  padding-left: calc(14px + env(safe-area-inset-left));
+  padding-right: calc(14px + env(safe-area-inset-right));
+}
+
+.sec-row,
+#dock-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sec-row button {
+  flex: 0 0 56px;
+  width: 56px;
+}
+
+#sec-label,
+#sec-label-pause {
+  flex: 1;
+  min-width: 4.5em;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+}
+
+#dock button {
+  flex: 1;
+  border: 1px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+#btn-next {
+  flex: 1.6;
+  background: var(--btn);
+  color: var(--btn-ink);
+  border-color: var(--btn);
+}
+
+#cover,
+#pause,
+#done {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: calc(28px + env(safe-area-inset-top)) 22px calc(22px + env(safe-area-inset-bottom));
+  background: var(--paper);
+  color: var(--ink);
+}
+
+#cover[hidden],
+#pause[hidden],
+#done[hidden] {
+  display: none;
+}
+
+.sheet {
+  width: min(100%, 36rem);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cover-copy {
+  margin-top: auto;
+  margin-bottom: 18px;
+}
+
+.cover-copy h2,
+#done h2,
+#pause h2 {
+  margin: 0 0 8px;
+  font-size: 40px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+}
+
+.by {
+  margin: 0 0 18px;
+  font-size: 18px;
+  letter-spacing: 0.12em;
+}
+
+.lead, .note, #done p {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.8;
+  letter-spacing: 0.04em;
+}
+
+.note {
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.primary, .ghost {
+  width: 100%;
+  border-radius: 14px;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+.primary {
+  border: 0;
+  background: var(--btn);
+  color: var(--btn-ink);
+}
+
+.ghost {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 16px;
+}
+
+.row .pair {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#font-label {
+  min-width: 2ch;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.chapters {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.chapters button {
+  min-width: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  font-size: 18px;
+  letter-spacing: 0.12em;
+}
+
+#pause {
+  z-index: 8;
+  justify-content: center;
+  overflow: auto;
+}
+
+#pause,
+#pause * {
+  touch-action: pan-y;
+}
+
+#pause button {
+  touch-action: manipulation;
+}

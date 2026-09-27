@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#f3efe4">
+<title>二百十日</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header id="bar">
+  <h1 id="title-label">二百十日</h1>
+  <span id="progress-label">0%</span>
+  <button type="button" id="btn-mute" class="icon-btn game-btn" aria-pressed="false" aria-label="音を消す">音</button>
+  <button type="button" id="btn-pause" class="icon-btn game-btn" aria-label="一時停止">停</button>
+</header>
+<div id="meter" aria-hidden="true"><span id="meter-bar"></span></div>
+<main id="stage">
+  <div id="flow" aria-live="polite"></div>
+</main>
+<footer id="dock">
+  <div class="sec-row">
+    <button type="button" id="btn-sec-down" class="game-btn" aria-label="コマの秒数を0.1秒短く">−</button>
+    <span id="sec-label">2.0秒</span>
+    <button type="button" id="btn-sec-up" class="game-btn" aria-label="コマの秒数を0.1秒長く">＋</button>
+  </div>
+  <div id="dock-nav">
+    <button type="button" id="btn-prev" class="game-btn" disabled>前へ</button>
+    <button type="button" id="btn-next" class="game-btn">次へ</button>
+  </div>
+</footer>
+
+<section id="cover">
+  <div class="sheet">
+    <div class="cover-copy">
+      <h2>二百十日</h2>
+      <p class="by">夏目漱石</p>
+      <p class="lead">文節が、一コマずつ替わります。画面をタップすると、次の文節になります。</p>
+    </div>
+    <button type="button" id="btn-start" class="primary game-btn" disabled>読みはじめる</button>
+    <button type="button" id="btn-resume" class="ghost game-btn" hidden disabled>つづきから</button>
+    <p id="cover-note" class="note">一度に見えるのは、いまの文節だけです。ふりがなは漢字の上に出ます。下の秒数は、0.1秒から0.1秒ずつ変えられます。</p>
+    <p id="fault" class="note" hidden></p>
+  </div>
+</section>
+
+<section id="pause" hidden data-scrollable>
+  <div class="sheet" data-scrollable>
+    <h2>一時停止</h2>
+    <button type="button" id="btn-resume-read" class="primary game-btn">つづける</button>
+    <div class="row">
+      <span>コマの秒数</span>
+      <div class="pair">
+        <button type="button" id="btn-sec-down-pause" class="game-btn" aria-label="コマの秒数を0.1秒短く">−</button>
+        <span id="sec-label-pause">2.0秒</span>
+        <button type="button" id="btn-sec-up-pause" class="game-btn" aria-label="コマの秒数を0.1秒長く">＋</button>
+      </div>
+    </div>
+    <div class="row">
+      <span>文字の大きさ</span>
+      <div class="pair">
+        <button type="button" id="btn-font-down" class="game-btn" aria-label="文字を小さく">小</button>
+        <span id="font-label">22</span>
+        <button type="button" id="btn-font-up" class="game-btn" aria-label="文字を大きく">大</button>
+      </div>
+    </div>
+    <button type="button" id="btn-theme" class="ghost game-btn">暗い画面</button>
+    <div class="chapters" id="chapter-box" aria-label="章"></div>
+    <button type="button" id="btn-reset" class="ghost game-btn">はじめから</button>
+  </div>
+</section>
+
+<section id="done" hidden>
+  <div class="sheet">
+    <div class="cover-copy">
+      <h2>おわり</h2>
+      <p>夏目漱石『二百十日』</p>
+      <p class="note">底本はちくま文庫『夏目漱石全集3』。本文は青空文庫によります。</p>
+    </div>
+    <button type="button" id="btn-done-close" class="primary game-btn">本文に戻る</button>
+    <button type="button" id="btn-done-cover" class="ghost game-btn">表紙へ</button>
+  </div>
+</section>
+<script src="script.js"></script>
+</body>
+</html>
