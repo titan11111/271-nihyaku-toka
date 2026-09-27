@@ -46,6 +46,7 @@
     </div>
     <button type="button" id="btn-start" class="primary game-btn" disabled>読みはじめる</button>
     <button type="button" id="btn-resume" class="ghost game-btn" hidden disabled>つづきから</button>
+    <button type="button" id="btn-import-open" class="ghost game-btn">文を貼り付ける</button>
     <p id="cover-note" class="note">一度に見えるのは、いまの文節だけです。ふりがなは漢字の上に出ます。下の秒数は、0.1秒から0.1秒ずつ変えられます。</p>
     <p id="fault" class="note" hidden></p>
   </div>
@@ -74,6 +75,19 @@
     <button type="button" id="btn-theme" class="ghost game-btn">暗い画面</button>
     <div class="chapters" id="chapter-box" aria-label="章"></div>
     <button type="button" id="btn-reset" class="ghost game-btn">はじめから</button>
+  </div>
+</section>
+
+<section id="import" hidden data-scrollable>
+  <div class="sheet" data-scrollable>
+    <h2>文を貼り付ける</h2>
+    <p class="note">貼り付けたあと「読み込む」で、文節ごとに自動で区切ります。1行がひと段落です。</p>
+    <label class="import-label" for="import-text">本文</label>
+    <textarea id="import-text" data-scrollable rows="8" placeholder="ここにテキストを貼り付け"></textarea>
+    <p id="import-status" class="note" aria-live="polite"></p>
+    <button type="button" id="btn-import-apply" class="primary game-btn">読み込む</button>
+    <button type="button" id="btn-import-cancel" class="ghost game-btn">やめる</button>
+    <button type="button" id="btn-import-novel" class="ghost game-btn" hidden>『二百十日』に戻す</button>
   </div>
 </section>
 

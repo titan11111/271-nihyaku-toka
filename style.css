@@ -241,6 +241,62 @@ button:disabled {
   border-color: var(--btn);
 }
 
+#import {
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  padding: calc(28px + env(safe-area-inset-top)) 22px calc(22px + env(safe-area-inset-bottom));
+  background: var(--paper);
+  color: var(--ink);
+  overflow: auto;
+}
+
+#import[hidden] {
+  display: none;
+}
+
+#import,
+#import * {
+  touch-action: pan-y;
+}
+
+#import button {
+  touch-action: manipulation;
+}
+
+.import-label {
+  font-size: 14px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+}
+
+#import-text {
+  width: 100%;
+  min-height: 12rem;
+  max-height: 40vh;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.75;
+  letter-spacing: 0.04em;
+  resize: vertical;
+  -webkit-user-select: text;
+  user-select: text;
+  touch-action: manipulation;
+}
+
+#import-text::placeholder {
+  color: var(--muted);
+}
+
 #cover,
 #pause,
 #done {

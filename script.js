@@ -4,7 +4,9 @@
     mute: "tg.271.mute",
     font: "tg.271.font",
     theme: "tg.271.theme",
-    sec: "tg.271.sec"
+    sec: "tg.271.sec",
+    custom: "tg.271.custom",
+    customText: "tg.271.customText"
   };
   const SEC_MIN = 1;
   const SEC_MAX = 150;
@@ -22,6 +24,7 @@
   let started = false;
   let sec = 20;
   let frameTimer = 0;
+  let contentMode = "novel";
 
   const $ = (id) => document.getElementById(id);
 
@@ -209,13 +212,15 @@
     return out;
   }
 
-  function parseNovel(raw) {
+  function parseNovel(raw, preset) {
+    const mode = preset === "free" ? "free" : "novel";
     const lines = String(raw).replace(/\r\n/g, "\n").split("\n");
     const list = [];
     let para = 0;
     for (let n = 0; n < lines.length; n++) {
       const core = lines[n].replace(/^[\s\u3000]+|[\s\u3000]+$/g, "");
-      if (!core || core === "二百十日" || core === "夏目漱石") continue;
+      if (!core) continue;
+      if (mode === "novel" && (core === "二百十日" || core === "夏目漱石")) continue;
       if (/^[一二三四五]$/.test(core)) {
         list.push({ type: "chapter", text: core });
         continue;
@@ -228,6 +233,14 @@
       para += 1;
     }
     return list;
+  }
+
+  function countFrames(list) {
+    let n = 0;
+    for (let i = 0; i < list.length; i++) {
+      if (list[i].type === "b") n += 1;
+    }
+    return n;
   }
 
   function readStore(key) {
@@ -330,7 +343,136 @@
     }
   }
 
+  function rebuildChapters() {
+    const box = $("chapter-box");
+    if (!box) return;
+    box.replaceChildren();
+    atoms.forEach((a, index) => {
+      if (a.type !== "chapter") return;
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "game-btn";
+      b.textContent = a.text;
+      b.setAttribute("aria-label", "章 " + a.text);
+      bindTap(b, () => {
+        if (!started) startAt(1);
+        jumpTo(index);
+      });
+      box.appendChild(b);
+    });
+  }
+
+  function setContentReady(mode) {
+    contentMode = mode === "custom" ? "custom" : "novel";
+    $("btn-start").disabled = false;
+    const resume = $("btn-resume");
+    resume.disabled = false;
+    const restore = $("btn-import-novel");
+    if (restore) restore.hidden = contentMode !== "custom";
+    const saved = parseInt(readStore(KEY.pos) || "0", 10);
+    resume.hidden = saved <= 1;
+    updateHud();
+  }
+
+  function failLoad(message) {
+    atoms = [];
+    $("btn-start").disabled = true;
+    const resume = $("btn-resume");
+    resume.disabled = true;
+    resume.hidden = true;
+    const note = $("cover-note");
+    if (note) note.textContent = message;
+  }
+
+  function applyParsedText(raw, mode, opts) {
+    const resetProgress = !opts || opts.resetProgress !== false;
+    const next = parseNovel(raw, mode === "custom" ? "free" : "novel");
+    if (!next.length || countFrames(next) < 1) return { ok: false, reason: "empty" };
+    atoms = next;
+    if (resetProgress) {
+      shown = 0;
+      started = false;
+      clearFrame();
+      $("done").hidden = true;
+      $("cover").hidden = false;
+      writeStore(KEY.pos, "0");
+    }
+    rebuildChapters();
+    setContentReady(mode);
+    return { ok: true, frames: countFrames(next) };
+  }
+
+  function persistCustomText(text) {
+    writeStore(KEY.custom, "1");
+    writeStore(KEY.customText, text);
+  }
+
+  function clearCustomText() {
+    try {
+      localStorage.removeItem(KEY.custom);
+      localStorage.removeItem(KEY.customText);
+    } catch (e) {}
+  }
+
+  function loadDefaultNovel() {
+    return fetch("novel.txt")
+      .then((res) => {
+        if (!res.ok) throw new Error("load");
+        return res.text();
+      })
+      .then((text) => {
+        clearCustomText();
+        const result = applyParsedText(text, "novel");
+        if (!result.ok) throw new Error("empty");
+        $("cover-note").textContent =
+          "一度に見えるのは、いまの文節だけです。ふりがなは漢字の上に出ます。下の秒数は、0.1秒から0.1秒ずつ変えられます。";
+        return result;
+      });
+  }
+
+  function openImport() {
+    const panel = $("import");
+    const area = $("import-text");
+    const status = $("import-status");
+    if (!panel || !area) return;
+    if (contentMode === "custom") {
+      const saved = readStore(KEY.customText);
+      if (saved) area.value = saved;
+    } else {
+      area.value = "";
+    }
+    if (status) status.textContent = "";
+    panel.hidden = false;
+    area.focus();
+  }
+
+  function closeImport() {
+    const panel = $("import");
+    if (panel) panel.hidden = true;
+  }
+
+  function applyImport() {
+    const area = $("import-text");
+    const status = $("import-status");
+    if (!area) return;
+    const raw = area.value;
+    if (!String(raw).replace(/\s/g, "")) {
+      if (status) status.textContent = "テキストを貼り付けてから、読み込んでください。";
+      return;
+    }
+    const result = applyParsedText(raw, "custom");
+    if (!result.ok) {
+      if (status) status.textContent = "文節に分けられませんでした。文字を入れてください。";
+      return;
+    }
+    persistCustomText(raw);
+    $("cover-note").textContent =
+      "貼り付けた文を、文節ごとに読みます。" + result.frames + "コマに分かれました。";
+    closeImport();
+  }
+
   function currentChapter() {
+    if (contentMode === "custom") return "貼り付け";
     let name = "一";
     const end = Math.min(shown, atoms.length);
     for (let i = 0; i < end; i++) {
@@ -339,10 +481,14 @@
     return name;
   }
 
+  function mainTitle() {
+    return contentMode === "custom" ? "読書" : "二百十日";
+  }
+
   function updateHud() {
     const total = Math.max(atoms.length, 1);
     const pct = Math.min(100, Math.round((shown / total) * 100));
-    $("title-label").textContent = "二百十日　" + currentChapter();
+    $("title-label").textContent = mainTitle() + "　" + currentChapter();
     $("progress-label").textContent = pct < 1 ? String(shown) : pct + "%";
     $("meter-bar").style.width = pct + "%";
     let canPrev = false;
@@ -380,7 +526,7 @@
   function armFrame() {
     clearFrame();
     if (!started || paused || sec < SEC_MIN) return;
-    if (!$("done").hidden || !$("cover").hidden || !$("pause").hidden) return;
+    if (!$("done").hidden || !$("cover").hidden || !$("pause").hidden || !$("import").hidden) return;
     frameTimer = setTimeout(function () {
       frameTimer = 0;
       goNext(true);
@@ -485,7 +631,10 @@
     document.addEventListener("dblclick", (e) => e.preventDefault());
     document.addEventListener("contextmenu", (e) => e.preventDefault());
     document.addEventListener("gesturestart", (e) => e.preventDefault());
-    document.addEventListener("selectstart", (e) => e.preventDefault());
+    document.addEventListener("selectstart", (e) => {
+      if (e.target.closest("#import-text")) return;
+      e.preventDefault();
+    });
     document.addEventListener("dragstart", (e) => e.preventDefault());
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState !== "visible") {
@@ -527,11 +676,24 @@
     const resume = $("btn-resume");
     if (saved > 1) resume.hidden = false;
 
+    bindTap($("btn-import-open"), openImport);
+    bindTap($("btn-import-apply"), applyImport);
+    bindTap($("btn-import-cancel"), closeImport);
+    bindTap($("btn-import-novel"), () => {
+      loadDefaultNovel()
+        .then(() => closeImport())
+        .catch(() => {
+          failLoad("本文を開けませんでした。もう一度開いてください。");
+        });
+    });
     bindTap($("btn-start"), () => startAt(1));
     bindTap(resume, () => startAt(saved));
     bindTap($("btn-next"), goNext);
     bindTap($("btn-prev"), goPrev);
-    bindTap($("stage"), () => { if (!$("pause").hidden || !$("done").hidden || !$("cover").hidden) return; goNext(); });
+    bindTap($("stage"), () => {
+      if (!$("pause").hidden || !$("done").hidden || !$("cover").hidden || !$("import").hidden) return;
+      goNext();
+    });
     bindTap($("btn-pause"), openPause);
     bindTap($("btn-resume-read"), closePause);
     bindTap($("btn-mute"), () => {
@@ -582,11 +744,15 @@
 
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
+        if (!$("import").hidden) {
+          closeImport();
+          return;
+        }
         if (!$("pause").hidden) closePause();
         else if (started && $("done").hidden) openPause();
         return;
       }
-      if (!$("cover").hidden || !$("pause").hidden || !$("done").hidden) return;
+      if (!$("cover").hidden || !$("pause").hidden || !$("done").hidden || !$("import").hidden) return;
       if (e.key === "ArrowRight" || e.key === " " || e.key === "Enter") {
         e.preventDefault();
         goNext();
@@ -598,34 +764,22 @@
 
     window.addEventListener("pagehide", persist);
 
-    fetch("novel.txt")
-      .then((res) => {
-        if (!res.ok) throw new Error("load");
-        return res.text();
-      })
-      .then((text) => {
-        atoms = parseNovel(text);
-        if (!atoms.length) throw new Error("empty");
-        $("btn-start").disabled = false;
-        resume.disabled = false;
-        const box = $("chapter-box");
-        atoms.forEach((a, index) => {
-          if (a.type !== "chapter") return;
-          const b = document.createElement("button");
-          b.type = "button";
-          b.className = "game-btn";
-          b.textContent = a.text;
-          b.setAttribute("aria-label", "章 " + a.text);
-          bindTap(b, () => {
-            if (!started) startAt(1);
-            jumpTo(index);
-          });
-          box.appendChild(b);
+    const customBody = readStore(KEY.customText);
+    if (readStore(KEY.custom) === "1" && customBody) {
+      const result = applyParsedText(customBody, "custom", { resetProgress: false });
+      if (result.ok) {
+        $("cover-note").textContent =
+          "貼り付けた文を、文節ごとに読みます。" + result.frames + "コマに分かれました。";
+      } else {
+        loadDefaultNovel().catch(() => {
+          failLoad("本文を開けませんでした。もう一度開いてください。");
         });
-      })
-      .catch(() => {
-        $("cover-note").textContent = "本文を開けませんでした。もう一度開いてください。";
+      }
+    } else {
+      loadDefaultNovel().catch(() => {
+        failLoad("本文を開けませんでした。もう一度開いてください。");
       });
+    }
   }
 
   if (typeof document !== "undefined") {
@@ -634,6 +788,6 @@
   }
 
   if (typeof module !== "undefined" && module.exports) {
-    module.exports = { parseNovel: parseNovel, splitBunsetsu: splitBunsetsu };
+    module.exports = { parseNovel: parseNovel, splitBunsetsu: splitBunsetsu, countFrames: countFrames };
   }
 })();
